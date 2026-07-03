@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>PLG_SYSTEM_JBLOCKBADWORDS</name>
+    <author>JBlockBadWords</author>
+    <creationDate>2026-07-03</creationDate>
+    <version>0.1.0</version>
+    <description>PLG_SYSTEM_JBLOCKBADWORDS_XML_DESCRIPTION</description>
+    <namespace path="src">Joomla\Plugin\System\JBlockBadWords</namespace>
+
+    <files>
+        <folder plugin="jblockbadwords">services</folder>
+        <folder>src</folder>
+        <folder>language</folder>
+    </files>
+
+    <languages>
+        <language tag="en-GB">language/en-GB/plg_system_jblockbadwords.ini</language>
+        <language tag="en-GB">language/en-GB/plg_system_jblockbadwords.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field
+                    name="blocked_words"
+                    type="textarea"
+                    label="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_BLOCKED_WORDS_LABEL"
+                    description="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_BLOCKED_WORDS_DESC"
+                    rows="8"
+                    cols="50"
+                />
+                <field
+                    name="case_sensitive"
+                    type="radio"
+                    label="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_CASE_SENSITIVE_LABEL"
+                    description="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_CASE_SENSITIVE_DESC"
+                    default="0"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="match_substring"
+                    type="radio"
+                    label="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_MATCH_SUBSTRING_LABEL"
+                    description="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_MATCH_SUBSTRING_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="check_article_save"
+                    type="radio"
+                    label="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_CHECK_ARTICLE_SAVE_LABEL"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="check_kunena_post"
+                    type="radio"
+                    label="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_CHECK_KUNENA_POST_LABEL"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+</extension>
