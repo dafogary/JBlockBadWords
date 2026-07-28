@@ -3,7 +3,7 @@
     <name>PLG_SYSTEM_JBLOCKBADWORDS</name>
     <author>JBlockBadWords</author>
     <creationDate>2026-07-03</creationDate>
-    <version>0.1.0</version>
+    <version>0.1.2</version>
     <description>PLG_SYSTEM_JBLOCKBADWORDS_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Plugin\System\JBlockBadWords</namespace>
 
@@ -28,6 +28,13 @@
                     description="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_BLOCKED_WORDS_DESC"
                     rows="8"
                     cols="50"
+                />
+                <field
+                    name="support_project"
+                    type="note"
+                    label="PLG_SYSTEM_JBLOCKBADWORDS_SUPPORT_LABEL"
+                    description="PLG_SYSTEM_JBLOCKBADWORDS_SUPPORT_DESC"
+                    class="alert alert-info"
                 />
                 <field
                     name="case_sensitive"
@@ -71,6 +78,14 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
+                <field
+                    name="notification_emails"
+                    type="textarea"
+                    label="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_NOTIFICATION_EMAILS_LABEL"
+                    description="PLG_SYSTEM_JBLOCKBADWORDS_FIELD_NOTIFICATION_EMAILS_DESC"
+                    rows="3"
+                    cols="50"
+                />
             </fieldset>
         </fields>
     </config>

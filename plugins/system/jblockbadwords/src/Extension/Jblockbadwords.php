@@ -9,6 +9,8 @@ use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Table\TableInterface;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Log\Log;
+use Joomla\CMS\Uri\Uri;
 
 final class Jblockbadwords extends CMSPlugin
 {
@@ -41,6 +43,8 @@ final class Jblockbadwords extends CMSPlugin
         }
 
         $app = Factory::getApplication();
+        $this->handleBlockedAttempt($foundWords);
+
         $message = Text::sprintf('PLG_SYSTEM_JBLOCKBADWORDS_ERROR_BLOCKED_WORDS', implode(', ', $foundWords));
 
         $app->enqueueMessage($message, 'error');
@@ -86,11 +90,137 @@ final class Jblockbadwords extends CMSPlugin
             return;
         }
 
+        $this->handleBlockedAttempt($foundWords);
+
         $message = Text::sprintf('PLG_SYSTEM_JBLOCKBADWORDS_ERROR_BLOCKED_WORDS', implode(', ', $foundWords));
         $returnUrl = $input->server->getString('HTTP_REFERER', Route::_('index.php', false));
 
-        $app->redirect($returnUrl, $message, 'error');
+        $app->enqueueMessage($message, 'error');
+        $app->redirect($returnUrl);
         $app->close();
+    }
+
+    private function handleBlockedAttempt(array $foundWords): void
+    {
+        $details = $this->buildAttemptDetails($foundWords);
+
+        $this->logBlockedAttempt($details);
+        $this->sendBlockedAttemptEmail($details);
+    }
+
+    private function buildAttemptDetails(array $foundWords): array
+    {
+        $app = Factory::getApplication();
+        $input = $app->input;
+        $user = $app->getIdentity();
+
+        return [
+            'username' => $user !== null && !empty($user->username) ? (string) $user->username : 'guest',
+            'userId' => $user !== null ? (int) $user->id : 0,
+            'ip' => (string) $input->server->getString('REMOTE_ADDR', 'unknown'),
+            'blockedWords' => implode(', ', $foundWords),
+            'url' => Uri::getInstance()->toString(),
+            'timestamp' => Factory::getDate()->toSql(),
+        ];
+    }
+
+    private function logBlockedAttempt(array $details): void
+    {
+        static $loggerRegistered = false;
+
+        if (!$loggerRegistered) {
+            Log::addLogger(
+                [
+                    'text_file' => 'plg_system_jblockbadwords.php',
+                ],
+                Log::ALL,
+                ['plg_system_jblockbadwords']
+            );
+
+            $loggerRegistered = true;
+        }
+
+        Log::add(
+            sprintf(
+                'Blocked submission detected. Username: %s | User ID: %d | IP: %s | Words: %s | URL: %s | Time: %s',
+                $details['username'],
+                $details['userId'],
+                $details['ip'],
+                $details['blockedWords'],
+                $details['url'],
+                $details['timestamp']
+            ),
+            Log::WARNING,
+            'plg_system_jblockbadwords'
+        );
+    }
+
+    private function sendBlockedAttemptEmail(array $details): void
+    {
+        try {
+            $config = Factory::getConfig();
+            $defaultRecipient = trim((string) $config->get('mailfrom', ''));
+            $recipients = $this->getNotificationRecipients($defaultRecipient);
+
+            if ($recipients === []) {
+                return;
+            }
+
+            $siteName = (string) $config->get('sitename', 'Joomla Site');
+            $mailFrom = $defaultRecipient;
+            $fromName = (string) $config->get('fromname', $siteName);
+
+            if ($mailFrom === '') {
+                return;
+            }
+
+            $mailer = Factory::getMailer();
+            $mailer->setSender([$mailFrom, $fromName]);
+            $mailer->addRecipient($recipients);
+            $mailer->setSubject(Text::sprintf('PLG_SYSTEM_JBLOCKBADWORDS_EMAIL_SUBJECT', $siteName));
+            $mailer->setBody(
+                Text::sprintf(
+                    'PLG_SYSTEM_JBLOCKBADWORDS_EMAIL_BODY',
+                    $details['username'],
+                    (string) $details['userId'],
+                    $details['ip'],
+                    $details['blockedWords'],
+                    $details['url'],
+                    $details['timestamp']
+                )
+            );
+            $mailer->isHtml(false);
+            $mailer->send();
+        } catch (\Throwable $e) {
+            Log::add(
+                'Unable to send blocked-attempt email notification: ' . $e->getMessage(),
+                Log::WARNING,
+                'plg_system_jblockbadwords'
+            );
+        }
+    }
+
+    private function getNotificationRecipients(string $defaultRecipient): array
+    {
+        $configured = (string) $this->params->get('notification_emails', '');
+        $source = trim($configured) !== '' ? $configured : $defaultRecipient;
+
+        if (trim($source) === '') {
+            return [];
+        }
+
+        $chunks = preg_split('/[\r\n,;]+/', $source) ?: [];
+        $emails = [];
+
+        foreach ($chunks as $chunk) {
+            $email = trim($chunk);
+
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $emails[] = $email;
+            }
+        }
+
+        return array_values(array_unique($emails));
     }
 
     private function shouldCheckContentContext(string $context): bool
@@ -215,11 +345,20 @@ final class Jblockbadwords extends CMSPlugin
                 return str_contains($text, $word);
             }
 
-            return str_contains(mb_strtolower($text), mb_strtolower($word));
+            return str_contains($this->toLower($text), $this->toLower($word));
         }
 
         $pattern = '/\\b' . preg_quote($word, '/') . '\\b/' . ($caseSensitive ? 'u' : 'iu');
 
         return (bool) preg_match($pattern, $text);
+    }
+
+    private function toLower(string $value): string
+    {
+        if (function_exists('mb_strtolower')) {
+            return mb_strtolower($value);
+        }
+
+        return strtolower($value);
     }
 }

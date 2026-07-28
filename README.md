@@ -1,6 +1,6 @@
 # JBlockBadWords
 
-Version: 0.1.0 (experimental)
+Version: 0.1.2 (experimental)
 
 JBlockBadWords is a Joomla system plugin that blocks submissions when configured bad words are found.
 
@@ -19,17 +19,28 @@ It checks:
 - Substring matching or whole-word matching
 - Separate toggles for Joomla content saves and Kunena post submissions
 
-## Install
+## Build
 
-1. Build a zip package from the `plugins` folder content:
+From the repository root:
 
 ```bash
-cd /workspaces/JBlockBadWords
-zip -r plg_system_jblockbadwords-0.1.0-experimental.zip plugins/system/jblockbadwords
+./build.sh
+```
+
+This generates:
+
+`plg_system_jblockbadwords-<version>.zip`
+
+## Install
+
+1. Build the plugin package:
+
+```bash
+./build.sh
 ```
 
 2. In Joomla Admin, go to `System -> Install -> Extensions`.
-3. Upload `plg_system_jblockbadwords-0.1.0-experimental.zip`.
+3. Upload `plg_system_jblockbadwords-<version>.zip`.
 4. Go to `System -> Plugins`, find `System - JBlock Bad Words`, enable it.
 
 ## Configure
@@ -48,3 +59,13 @@ In plugin settings:
 
 - For Kunena, blocking is applied to likely message fields in POST payload (`subject`, `title`, `name`, `message`, `text`, `body`, `content`).
 - If a blocked word is detected, submission is stopped and an error message is shown to the user.
+
+## Support the continued development of JBlockBadWords
+
+Help support the continued development of JBlockBadWords
+
+<form action="https://www.paypal.com/donate" method="post" target="_top">
+<input type="hidden" name="hosted_button_id" value="B9CLB4VNPBZZC" />
+<input type="image" src="https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+<img alt="" border="0" src="https://www.paypal.com/en_GB/i/scr/pixel.gif" width="1" height="1" />
+</form>

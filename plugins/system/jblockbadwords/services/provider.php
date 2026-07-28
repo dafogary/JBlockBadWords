@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Joomla\CMS\Factory;
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
@@ -19,7 +20,7 @@ return new class () implements ServiceProviderInterface {
                     $container->get(DispatcherInterface::class),
                     (array) PluginHelper::getPlugin('system', 'jblockbadwords')
                 );
-                $plugin->setApplication($container->get('application'));
+                $plugin->setApplication(Factory::getApplication());
 
                 return $plugin;
             }
